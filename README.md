@@ -19,4 +19,4 @@ CloudFlare 扫描器 （简称CFS)
 
 📈 实时统计：显示扫描进度、速度
 
-
+相关视频演示：https://youtu.be/x9NTDJqV2uk
