@@ -10,7 +10,7 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"sync"
+	// "sync"
 	"time"
 )
 
