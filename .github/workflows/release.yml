@@ -38,19 +38,25 @@ jobs:
           fi
 
       # 4. 交叉编译 (同时生成 Linux, Windows, macOS 版本)
+# 4. 交叉编译 (修改版)
       - name: Build Binaries
         run: |
           echo "Building for Linux (amd64)..."
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o CloudFlareScan-linux-amd64 main.go
+          # 注意看结尾，变成了 . 
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o CloudFlareScan-linux-amd64 .
           
           echo "Building for Windows (amd64)..."
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o CloudFlareScan-windows-amd64.exe main.go
+          # 注意看结尾，变成了 . 
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o CloudFlareScan-windows-amd64.exe .
           
           echo "Building for macOS (Intel)..."
-          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o CloudFlareScan-darwin-amd64 main.go
+          # 注意看结尾，变成了 . 
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o CloudFlareScan-darwin-amd64 .
           
           echo "Building for macOS (Apple Silicon)..."
-          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o CloudFlareScan-darwin-arm64 main.go
+          # 注意看结尾，变成了 . 
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o CloudFlareScan-darwin-arm64 .
+
 
       # 5. 创建 Release 并上传文件
       - name: Create Release
