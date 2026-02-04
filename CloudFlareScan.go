@@ -10,12 +10,15 @@ import ssl
 from datetime import datetime
 from typing import List, Optional, Dict
 import csv
+import json
+import urllib.request
+import urllib.error
 
 from PySide6.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
     QLineEdit, QProgressBar, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QHBoxLayout, QGridLayout, QHeaderView,
-    QTextEdit, QComboBox, QFileDialog
+    QTextEdit, QComboBox, QFileDialog, QCheckBox
 )
 from PySide6.QtCore import Qt, QThread, Signal, QTimer
 from PySide6.QtGui import QFont, QColor, QIcon
@@ -919,6 +922,7 @@ class CloudflareScanUI(QWidget):
         self.scan_results = []
         self.speed_results = []
         self.current_scan_port = 443
+        self.keep_top3_per_region_full_test = False
         
         self.init_ui()
     
@@ -1061,9 +1065,49 @@ class CloudflareScanUI(QWidget):
         self.btn_export.clicked.connect(self.export_results)
         row3.addWidget(self.btn_export)
 
+        row4 = QHBoxLayout()
+        row4.setSpacing(SPACING)
+        row4.setAlignment(Qt.AlignCenter)
+
+        self.chk_top3_region = QCheckBox("按地区保留每区最快3个(仅完全测速)")
+        self.chk_top3_region.setChecked(False)
+        self.chk_top3_region.setStyleSheet(f"""
+            QCheckBox {{
+                color: #111827;
+                font-size: 12px;
+                font-family: "{SYSTEM_FONT}";
+            }}
+        """)
+        self.chk_top3_region.stateChanged.connect(self.on_top3_region_changed)
+        row4.addWidget(self.chk_top3_region, 1)
+
+        self.input_gist_token = QLineEdit()
+        self.input_gist_token.setFixedHeight(BTN_H)
+        self.input_gist_token.setFont(FONT_BTN)
+        self.input_gist_token.setPlaceholderText("Gist Token (需要 gist 权限)")
+        self.input_gist_token.setEchoMode(QLineEdit.Password)
+        self.input_gist_token.setStyleSheet(f"""
+            QLineEdit {{
+                background: white;
+                border: 1px solid #D1D5DB;
+                border-radius: 6px;
+                padding-left: 8px;
+                font-family: "{SYSTEM_FONT}";
+            }}
+            QLineEdit:focus {{
+                border-color: #F97316;
+            }}
+        """)
+        row4.addWidget(self.input_gist_token, 1)
+
+        self.btn_gist = self.make_btn("保存到Gist", "#111827", enabled=False)
+        self.btn_gist.clicked.connect(self.save_results_to_gist)
+        row4.addWidget(self.btn_gist)
+
         control.addLayout(row1)
         control.addLayout(row2)
         control.addLayout(row3)
+        control.addLayout(row4)
 
         main.addLayout(control)
 
