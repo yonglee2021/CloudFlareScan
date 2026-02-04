@@ -1,0 +1,69 @@
+name: Build and Release
+
+# 触发条件：当推送以 "v" 开头的标签时（例如 v1.0.0）
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. 拉取代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 安装 Go 环境
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21' # 使用较新的 Go 版本
+
+      # 3. 处理依赖 (如果你的仓库里没有 go.mod，会自动初始化)
+      - name: Setup Dependencies
+        run: |
+          if [ ! -f go.mod ]; then
+            echo "Initializing go.mod..."
+            go mod init github.com/${{ github.repository }}
+            go mod tidy
+          else
+            echo "Downloading dependencies..."
+            go mod download
+          fi
+
+      # 4. 交叉编译 (同时生成 Linux, Windows, macOS 版本)
+      - name: Build Binaries
+        run: |
+          echo "Building for Linux (amd64)..."
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o CloudFlareScan-linux-amd64 main.go
+          
+          echo "Building for Windows (amd64)..."
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o CloudFlareScan-windows-amd64.exe main.go
+          
+          echo "Building for macOS (Intel)..."
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o CloudFlareScan-darwin-amd64 main.go
+          
+          echo "Building for macOS (Apple Silicon)..."
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o CloudFlareScan-darwin-arm64 main.go
+
+      # 5. 创建 Release 并上传文件
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          # 上传上面编译好的所有文件
+          files: |
+            CloudFlareScan-linux-amd64
+            CloudFlareScan-windows-amd64.exe
+            CloudFlareScan-darwin-amd64
+            CloudFlareScan-darwin-arm64
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
