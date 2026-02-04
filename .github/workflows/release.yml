@@ -41,6 +41,9 @@ jobs:
 # 4. 交叉编译 (修改版)
       - name: Build Binaries
         run: |
+          echo "=== 正在列出当前所有文件 (调试用) ==="
+          ls -R
+          echo "======================================"
           echo "Building for Linux (amd64)..."
           # 注意看结尾，变成了 . 
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o CloudFlareScan-linux-amd64 .
